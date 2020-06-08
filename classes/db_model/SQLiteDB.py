@@ -1,5 +1,6 @@
 from os import path
 from classes.db_model.enums.Toppings import Toppings
+from classes.db_model.enums.Sizes import Sizes
 import sqlite3
 
 class SQLiteDB:
@@ -8,9 +9,10 @@ class SQLiteDB:
 	__instance = None # connection instance
 	
 	# fixed values stored in database (needed for creating the database), should get extracted and not initialized when db is already up
+	__size_ids = (Sizes.PERSONAL, Sizes.MEDIUM, Sizes.FAMILY)
 	__size_names = ('personal', 'mediano', 'familiar')
 	__size_prices = (10, 15, 20)
-	__topping_names = ('jamón', 'champiñones', 'pimentón', 'doble queso', 'aceitunas', 'pepperoni', 'salchichón')
+	__topping_names = [('jamón',), ('champiñones',), ('pimentón',), ('doble queso',), ('aceitunas',), ('pepperoni',), ('salchichón',)]
 	__topping_prices = {
 		Toppings.HAM.value: (1.5, 1.75, 2.00), 
 		Toppings.MUSHROOM.value: (1.75, 2.05, 2.50), 
@@ -38,43 +40,54 @@ class SQLiteDB:
 			print('database exists')
 			return db
 		
-		print('base de datos no existe')
+		print("database doesn't exist")
 		db = sqlite3.connect('./DB/Store.db')
 		cursor = db.cursor()
 		
 		#cursor.execute('SET CHARACTER utf8')
 		# create every table in the DB
-		self.createSizesTable(cursor)
-		self.createToppingsTable(cursor)
-		#self.createPizzasTable(cursor) # in progress
-		#self.createToppingPricesTable(cursor) # in progress
+		self.initSizesTable(cursor)
+		self.initToppingsTable(cursor)
+		self.initOrdersTable(cursor)
+		self.initPizzasTable(cursor)
+		self.initToppingPricesTable(cursor)
+		
 		db.commit()
 		return db
 		
-	def createSizesTable(self, cursor):
+	def initSizesTable(self, cursor):
 		"""Crea la tabla Sizes si Store.db no existe"""
 		cursor.execute('CREATE TABLE IF NOT EXISTS Sizes (SizeId INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, price INT)')
-		cursor.execute("INSERT INTO Sizes (name, price) VALUES " + ','.join("('{}', {})".format(size, price) for size, price in zip(self.__size_names, self.__size_prices))) # maybe use executemany
+		cursor.executemany('INSERT INTO Sizes (name, price) VALUES (?,?)', zip(self.__size_names, self.__size_prices))
 		
-	def createToppingsTable(self, cursor):
+	def initToppingsTable(self, cursor):
 		"""Crea la tabla Toppings si Store.db no existe"""
 		cursor.execute('CREATE TABLE IF NOT EXISTS Toppings (ToppingId INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL)')
-		cursor.execute("INSERT INTO Toppings (name) VALUES " + ','.join("('{}')".format(topping) for topping in self.__topping_names))
+		cursor.executemany('INSERT INTO Toppings (name) VALUES (?)', self.__topping_names)
 		
-	# in progress
-	def createPizzasTable(self, cursor):
+	def initOrdersTable(self, cursor):
+		"""Crea la tabla Orders si Store.db no existe"""
+		cursor.execute('CREATE TABLE IF NOT EXISTS Orders (OrderId INTEGER PRIMARY KEY AUTOINCREMENT, client_name VARCHAR NOT NULL, order_date DATE NOT NULL, total FLOAT NOT NULL)')
+		
+	def initPizzasTable(self, cursor):
 		"""Crea la tabla Pizzas si Store.db no existe"""
-		cursor.execute('''CREATE TABLE IF NOT EXISTS Sales 
-						(PizzaId INTEGER PRIMARY KEY AUTOINCREMENT, client_name VARCHAR NOT NULL, sale_date DATE NOT NULL, SizeId INTEGER, CONSTRAINT fk_SizeId FOREIGN KEY (SizeId) REFERENCES Sizes(SizeId), total FLOAT NOT NULL)''')
+		cursor.execute('''CREATE TABLE IF NOT EXISTS Pizzas (PizzaId INTEGER PRIMARY KEY AUTOINCREMENT, total FLOAT NOT NULL, 
+						SizeId INTEGER, OrderId INTEGER, 
+						FOREIGN KEY (SizeId) REFERENCES Sizes(SizeId), 
+						FOREIGN KEY (OrderId) REFERENCES Orders(OrderId))''')
 	
-	# in progress
-	def createToppingPricesTable(self, cursor):
+	def initToppingPricesTable(self, cursor):
 		"""Crea la tabla ToppingPrices si Store.db no existe"""
-		cursor.execute('''CREATE TABLE IF NOT EXISTS IngredientPrices 
-						(SizeId INTEGER, CONSTRAINT fk_SizeId FOREIGN KEY (SizeId) REFERENCES Sizes(SizedId), 
-						ToppingId INTEGER, CONSTRAINT fk_ToppingId FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId), 
-						price FLOAT NOT NULL)''')
-		cursor.execute('''INSERT INTO ToppingPrices (SizeId, ToppingId, price) VALUES (?,?,?)''') # insert multiple rows here (for each ToppingId)
+		cursor.execute('''CREATE TABLE IF NOT EXISTS ToppingPrices 
+						(price FLOAT NOT NULL, PizzaId INTEGER, ToppingId INTEGER, 
+						FOREIGN KEY (PizzaId) REFERENCES Pizzas(PizzaId)
+						FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
+		values = self.getToppingPricesRows()
+		cursor.executemany('INSERT INTO ToppingPrices (SizeId, ToppingId, price) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
+	
+	def getToppingPricesRows(self):
+		"""Retorna una lista de duplas [(SizeId, ToppingId, price)] para el uso de cursor.executemany()"""
+		return [(size_id.value, topping.value, price) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 	
 	@property
 	def instance(self):
