@@ -50,6 +50,7 @@ class SQLiteDB:
 		self.initToppingsTable(cursor)
 		self.initOrdersTable(cursor)
 		self.initPizzasTable(cursor)
+		self.initPizzaTopping(cursor)
 		self.initToppingPricesTable(cursor)
 		
 		db.commit()
@@ -76,17 +77,22 @@ class SQLiteDB:
 						FOREIGN KEY (SizeId) REFERENCES Sizes(SizeId), 
 						FOREIGN KEY (OrderId) REFERENCES Orders(OrderId))''')
 	
+	def initPizzaTopping(self, cursor):
+		"""Crea la tabla PizzaTopping si Store.db no existe"""
+		cursor.execute('''CREATE TABLE IF NOT EXISTS PizzaTopping (PizzaId INTEGER, ToppingId Integer, 
+					   FOREIGN KEY (PizzaId) REFERENCES Pizzas(PizzaId), 
+					   FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
+		
 	def initToppingPricesTable(self, cursor):
 		"""Crea la tabla ToppingPrices si Store.db no existe"""
-		cursor.execute('''CREATE TABLE IF NOT EXISTS ToppingPrices 
-						(price FLOAT NOT NULL, SizeId INTEGER, ToppingId INTEGER, 
+		cursor.execute('''CREATE TABLE IF NOT EXISTS ToppingPrices (price FLOAT NOT NULL, SizeId INTEGER, ToppingId INTEGER, 
 						FOREIGN KEY (SizeId) REFERENCES Pizzas(PizzaId)
 						FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
 		values = self.getToppingPricesRows()
 		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
 	def getToppingPricesRows(self):
-		"""Retorna una lista de duplas [(SizeId, ToppingId, price)] para el uso de cursor.executemany()"""
+		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
 		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 	
 	@property
