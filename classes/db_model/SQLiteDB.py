@@ -79,15 +79,15 @@ class SQLiteDB:
 	def initToppingPricesTable(self, cursor):
 		"""Crea la tabla ToppingPrices si Store.db no existe"""
 		cursor.execute('''CREATE TABLE IF NOT EXISTS ToppingPrices 
-						(price FLOAT NOT NULL, PizzaId INTEGER, ToppingId INTEGER, 
-						FOREIGN KEY (PizzaId) REFERENCES Pizzas(PizzaId)
+						(price FLOAT NOT NULL, SizeId INTEGER, ToppingId INTEGER, 
+						FOREIGN KEY (SizeId) REFERENCES Pizzas(PizzaId)
 						FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
 		values = self.getToppingPricesRows()
-		cursor.executemany('INSERT INTO ToppingPrices (SizeId, ToppingId, price) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
+		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
 	def getToppingPricesRows(self):
 		"""Retorna una lista de duplas [(SizeId, ToppingId, price)] para el uso de cursor.executemany()"""
-		return [(size_id.value, topping.value, price) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
+		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 	
 	@property
 	def instance(self):
