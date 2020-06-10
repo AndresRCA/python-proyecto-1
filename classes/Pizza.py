@@ -3,10 +3,10 @@ class Pizza:
 	def __init__(self, size, toppings):
 		"""Initialize size, base toppings and extra toppings"""
 		self.size = size
-		self.extra_toppings_list = ['jamon', 'champiñones', 
-									'pimenton', 'doble queso',
+		self.extra_toppings_list = ['jamón', 'champiñones', 
+									'pimentón', 'doble queso',
 									'aceitunes', 'pepperoni', 
-									'salchichon']
+									'salchichón']
 		self.toppings = toppings
 		self.toppings.append('salsa de tomate')
 		self.toppings.append('queso')
@@ -93,4 +93,5 @@ class Pizza:
 					elif extra_index == 6:
 						price += 2.1
 		"""Resturn´s the final price"""
+		price = '{:.2f}'.format(price)
 		return price
