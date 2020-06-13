@@ -93,9 +93,13 @@ class SQLiteDB:
 		cursor.execute('''CREATE TABLE IF NOT EXISTS ToppingPrices (price FLOAT NOT NULL, SizeId INTEGER, ToppingId INTEGER, 
 						FOREIGN KEY (SizeId) REFERENCES Pizzas(PizzaId)
 						FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
-		values = self.getToppingPricesRows()
+		# get the ToppingPrices rows to insert into table
+		values = [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
-	def getToppingPricesRows(self):
-		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
-		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
+	def getOrderDates(self):
+		"""Retorna fechas unicas dentro de la tabla Orders"""
+		c = self.connection.cursor()
+		c.execute('SELECT DISTINCT order_date FROM Orders ORDER BY order_date ASC')
+		dates = c.fetchall()
+		return dates
