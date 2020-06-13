@@ -42,11 +42,13 @@ class SQLiteDB:
 		"""Crea DB e inicialización. Retorna la conexión"""
 		if path.exists('./DB/Store.db'):
 			db = sqlite3.connect('./DB/Store.db')
+			db.row_factory = sqlite3.Row # important setting, this way rows can be accessed through column names plus other functionality
 			print('database exists')
 			return db
 		
 		print("database doesn't exist")
 		db = sqlite3.connect('./DB/Store.db')
+		db.row_factory = sqlite3.Row # important setting, this way rows can be accessed through column names plus other functionality
 		cursor = db.cursor()
 		
 		#cursor.execute('SET CHARACTER utf8')
@@ -99,7 +101,33 @@ class SQLiteDB:
 	
 	def getOrderDates(self):
 		"""Retorna fechas unicas dentro de la tabla Orders"""
-		c = self.connection.cursor()
-		c.execute('SELECT DISTINCT order_date FROM Orders ORDER BY order_date ASC')
-		dates = c.fetchall()
-		return dates
+		dates = []
+		try:			
+			c = self.connection.cursor()
+			c.execute('SELECT DISTINCT order_date FROM Orders ORDER BY order_date ASC')
+			dates = c.fetchall()
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return dates
+	
+	def getSalesByPizza(self, date = None):
+		"""Retorna ventas por tamaño de pizza"""
+		sales = []
+		try:			
+			c = self.connection.cursor()
+			
+			where_clause = 'WHERE O.order_date = {}'.format(date) if date else ''
+			sql_query = '''SELECT S.SizeId, S.name, COUNT(P.PizzaId) as Unidades, IFNULL(SUM(S.price), 0.00) as Monto_UMs  
+			FROM Sizes 
+			LEFT JOIN  Pizzas P on P.SizeId = S.SizeId 
+			LEFT JOIN Orders O on O.OrderId = P.OrderId'''
+			+ where_clause +
+			'''GROUP BY S.SizeId'''
+			
+			c.execute(sql_query)
+			sales = c.fetchall()
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return sales
