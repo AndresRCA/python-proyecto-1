@@ -6,7 +6,7 @@ import sqlite3
 class SQLiteDB:
 	"""SQLiteDB es una clase Singleton que maneja la base de datos y sus operaciones"""
 	
-	__instance = None # connection instance
+	__instance = None
 	
 	# fixed values stored in database (needed for creating the database), should get extracted and not initialized when db is already up
 	__size_ids = (Sizes.PERSONAL, Sizes.MEDIUM, Sizes.FAMILY)
@@ -31,7 +31,12 @@ class SQLiteDB:
 		return SQLiteDB.__instance
 	
 	def __init__(self):
-		SQLiteDB.__instance = self.setUp()
+		"""establece el objeto y crea una conexión"""
+		if SQLiteDB.__instance != None:
+			raise Exception('Esta clase es un singleton')
+		else:
+			SQLiteDB.__instance = self
+			SQLiteDB.connection = self.setUp()
 			
 	def setUp(self):
 		"""Crea DB e inicialización. Retorna la conexión"""
@@ -94,7 +99,3 @@ class SQLiteDB:
 	def getToppingPricesRows(self):
 		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
 		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
-	
-	@property
-	def instance(self):
-		return self.__instance
