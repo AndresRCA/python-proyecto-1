@@ -1,8 +1,8 @@
 import os 
 
-#from classes.SQLiteDB import *
-from classes.Pizza import *
-#from classes.Order import * 
+from classes.db_model.SQLiteDB import SQLiteDB
+from classes.Pizza import Pizza
+from classes.Order import Order
 
 def accesing_files(files_directory):
 	"""
@@ -74,7 +74,6 @@ def getting_info(pz_files):
 					aux.append(toppings)
 					pizzas_in_order.append(aux)
 					aux = []		
-
 
 if __name__ == '__main__':
 	# main start

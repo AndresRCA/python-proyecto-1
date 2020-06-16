@@ -1,2 +1,3 @@
 __pycache__/
 DB/*
+!DB/DB_Schema.png
