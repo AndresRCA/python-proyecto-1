@@ -96,6 +96,10 @@ class SQLiteDB:
 		values = [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
+	def getToppingPricesRows(self):
+		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
+		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
+	
 	def getOrderDates(self):
 		"""Retorna fechas unicas dentro de la tabla Orders"""
 		dates = []
@@ -127,28 +131,17 @@ class SQLiteDB:
 		except Error as e:
 			print("Error reading data from SQLite table", e)
 		finally:
-			return sales
-
-	def create_connection(self):
-		"""Create the connection to database"""
-		connect = None
-		try:
-			connect = sqlite3.connect('./DB/Store.db')
-			return connect
-		except Error as e:
-			print("Error: ", e)
-		return connect
-		
+			return sales	
 	
-	def get_sizes_rows(self, connect):
+	def get_sizes_rows(self):
 		"""Get sizes from database"""
-		cursor = connect.cursor()
+		cursor = self.connection.cursor()
 		cursor.execute("SELECT * FROM Sizes")
 		rows = cursor.fetchall()
 		return rows
 	
-	def get_toppings_rows(self, connect):
-		cursor = connect.cursor()
+	def get_toppings_rows(self):
+		cursor = self.connection.cursor()
 		cursor.execute("SELECT * FROM Toppings")
 		rows = cursor.fetchall()
 		return rows

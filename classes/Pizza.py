@@ -15,9 +15,8 @@ class Pizza:
 		Returns size id, price.
 		"""
 		size_price = 0
-		db = SQLiteDB()
-		connect = db.create_connection()
-		sizes_info = db.get_sizes_rows(connect)
+		db = SQLiteDB.getInstance()
+		sizes_info = db.get_sizes_rows()
 
 		"""Evaluate pizza size"""
 		for row in sizes_info:
@@ -31,9 +30,8 @@ class Pizza:
 		
 	def get_toppings_id(self, size_id):
 		"""Return the topping´s id."""
-		db = SQLiteDB()
-		connect = db.create_connection()
-		toppings_id = db.get_toppings_rows(connect)
+		db = SQLiteDB.getInstance()
+		db.get_toppings_rows()
 		ids = []
 		
 		"""Evaluate pizza toppings"""
@@ -50,7 +48,7 @@ class Pizza:
 		From toppings ID calculate the total price of toppings
 		"""
 		topping_price = 0
-		db = SQLiteDB()
+		db = SQLiteDB.getInstance()
 		toppings_info = db.getToppingPricesRows()
 		for id in toppings_id:
 			for row in toppings_info:
