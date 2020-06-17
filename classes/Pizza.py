@@ -31,7 +31,7 @@ class Pizza:
 	def get_toppings_id(self, size_id):
 		"""Return the topping´s id."""
 		db = SQLiteDB.getInstance()
-		db.get_toppings_rows()
+		toppings_id = db.get_toppings_rows()
 		ids = []
 		
 		"""Evaluate pizza toppings"""
