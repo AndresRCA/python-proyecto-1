@@ -10,7 +10,7 @@ class SQLiteDB:
 	
 	# fixed values stored in database (needed for creating the database), should get extracted and not initialized when db is already up
 	__size_ids = (Sizes.PERSONAL, Sizes.MEDIUM, Sizes.FAMILY)
-	__size_names = ('personal', 'mediano', 'familiar')
+	__size_names = ('personal', 'mediana', 'familiar')
 	__size_prices = (10, 15, 20)
 	__topping_names = [('jamón',), ('champiñones',), ('pimentón',), ('doble queso',), ('aceitunas',), ('pepperoni',), ('salchichón',)]
 	__topping_prices = {
