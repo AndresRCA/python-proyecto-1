@@ -122,9 +122,7 @@ class SQLiteDB:
 			sql_query = '''SELECT S.SizeId, S.name, COUNT(P.PizzaId) as Unidades, IFNULL(SUM(S.price), 0.00) as Monto_UMs  
 			FROM Sizes 
 			LEFT JOIN  Pizzas P on P.SizeId = S.SizeId 
-			LEFT JOIN Orders O on O.OrderId = P.OrderId'''
-			+ where_clause +
-			'''GROUP BY S.SizeId'''
+			LEFT JOIN Orders O on O.OrderId = P.OrderId'''+where_clause+'''GROUP BY S.SizeId'''
 			
 			c.execute(sql_query)
 			sales = c.fetchall()

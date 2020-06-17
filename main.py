@@ -108,6 +108,6 @@ if __name__ == '__main__':
 	arrange_orders = get_info(pz_files)
 	for each_pz in arrange_orders:
 		"""separate each .pz file"""
-		prints('info in .pz:')
+		print('info in .pz:')
 		print(each_pz)
 		work_the_order(each_pz)
