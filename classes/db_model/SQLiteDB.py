@@ -36,17 +36,14 @@ class SQLiteDB:
 			raise Exception('Esta clase es un singleton')
 		else:
 			SQLiteDB.__instance = self
-			SQLiteDB.connection = self.setUp()
+			self.connection = self.setUp()
 			
 	def setUp(self):
 		"""Crea DB e inicialización. Retorna la conexión"""
 		if path.exists('./DB/Store.db'):
 			db = sqlite3.connect('./DB/Store.db')
 			db.row_factory = sqlite3.Row # important setting, this way rows can be accessed through column names plus other functionality
-			print('database exists')
 			return db
-		
-		print("database doesn't exist")
 		db = sqlite3.connect('./DB/Store.db')
 		db.row_factory = sqlite3.Row # important setting, this way rows can be accessed through column names plus other functionality
 		cursor = db.cursor()
@@ -131,3 +128,27 @@ class SQLiteDB:
 			print("Error reading data from SQLite table", e)
 		finally:
 			return sales
+
+	def create_connection(self):
+		"""Create the connection to database"""
+		connect = None
+		try:
+			connect = sqlite3.connect('./DB/Store.db')
+			return connect
+		except Error as e:
+			print("Error: ", e)
+		return connect
+		
+	
+	def get_sizes_rows(self, connect):
+		"""Get sizes from database"""
+		cursor = connect.cursor()
+		cursor.execute("SELECT * FROM Sizes")
+		rows = cursor.fetchall()
+		return rows
+	
+	def get_toppings_rows(self, connect):
+		cursor = connect.cursor()
+		cursor.execute("SELECT * FROM Toppings")
+		rows = cursor.fetchall()
+		return rows
