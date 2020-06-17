@@ -10,7 +10,7 @@ class SQLiteDB:
 	
 	# fixed values stored in database (needed for creating the database), should get extracted and not initialized when db is already up
 	__size_ids = (Sizes.PERSONAL, Sizes.MEDIUM, Sizes.FAMILY)
-	__size_names = ('personal', 'mediano', 'familiar')
+	__size_names = ('personal', 'mediana', 'familiar')
 	__size_prices = (10, 15, 20)
 	__topping_names = [('jamón',), ('champiñones',), ('pimentón',), ('doble queso',), ('aceitunas',), ('pepperoni',), ('salchichón',)]
 	__topping_prices = {
@@ -37,7 +37,7 @@ class SQLiteDB:
 		"""Crea DB e inicialización. Retorna la conexión"""
 		if path.exists('./DB/Store.db'):
 			db = sqlite3.connect('./DB/Store.db')
-			print('database exists')
+			#print('database exists')
 			return db
 		
 		print("database doesn't exist")
@@ -98,3 +98,27 @@ class SQLiteDB:
 	@property
 	def instance(self):
 		return self.__instance
+
+	def create_connection(self):
+		"""Create the connection to database"""
+		connect = None
+		try:
+			connect = sqlite3.connect('./DB/Store.db')
+			return connect
+		except Error as e:
+			print("Error: ", e)
+		return connect
+		
+	
+	def get_sizes_rows(self, connect):
+		"""Get sizes from database"""
+		cursor = connect.cursor()
+		cursor.execute("SELECT * FROM Sizes")
+		rows = cursor.fetchall()
+		return rows
+	
+	def get_toppings_rows(self, connect):
+		cursor = connect.cursor()
+		cursor.execute("SELECT * FROM Toppings")
+		rows = cursor.fetchall()
+		return rows
