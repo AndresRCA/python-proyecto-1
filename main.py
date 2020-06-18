@@ -99,15 +99,47 @@ def work_the_order(arrange_orders):
 			print(total)
 			print('') 
 		
-
+def createSummaryFile():
+	if not os.path.exists('./summary'):
+		os.makedirs('./summary')
+	f = open('./summary/summary.txt', 'w')
+	db = SQLiteDB.getInstance()
+	dates = db.getOrderDates()
+	for date in dates:
+		# separation line
+		f.write('===========================================\n')
+		
+		f.write('Fecha: '+str(date['order_date'])+'\n')
+		
+		orders_total = db.getOrdersTotal(date['order_date'])
+		f.write('Venta Total: '+str(orders_total)+' UMs\n')
+		
+		# ventas por pizza
+		sales_pizza = db.getSalesByPizza(date['order_date']) # at this point it's impossible that this list is empty
+		f.write('Ventas por pizza (sin incluir adicionales):\n')
+		f.write('{:20} {:20} {}\n'.format('Tamaño', 'Unidades', 'Monto Ums'))
+		for sale in sales_pizza:
+			f.write('{:20} {:20} {}\n'.format(sale['name'].capitalize(), sale['Unidades'], sale['Monto_Ums']))
+		
+		# ventas por ingrediente
+		sales_topping = db.getSalesByTopping(date['order_date'])
+		f.write('\nVentas por Ingrediente:\n')
+		f.write('{:20} {:20} {}\n'.format('Ingredientes', 'Unidades', 'Monto Ums'))
+		for sale in sales_topping:
+			f.write('{:20} {:20} {}\n'.format(sale['name'].capitalize(), sale['Unidades'], sale['Monto_Ums']))
+	f.close()
+		
 if __name__ == '__main__':
 	# main start
 	
-	files_directory = './orders'
-	pz_files = accesing_pz_files(files_directory)
-	arrange_orders = get_info(pz_files)
-	for each_pz in arrange_orders:
-		"""separate each .pz file"""
-		print('info in .pz:')
-		print(each_pz)
-		work_the_order(each_pz)
+	#files_directory = './orders'
+	#pz_files = accesing_pz_files(files_directory)
+	#arrange_orders = get_info(pz_files)
+	#for each_pz in arrange_orders:
+	#	"""separate each .pz file"""
+	#	print('info in .pz:')
+	#	print(each_pz)
+	#	work_the_order(each_pz)
+		
+	# generate a summary
+	createSummaryFile()

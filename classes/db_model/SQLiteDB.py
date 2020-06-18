@@ -106,7 +106,7 @@ class SQLiteDB:
 		dates = []
 		try:			
 			c = self.connection.cursor()
-			c.execute('SELECT DISTINCT order_date FROM Orders ORDER BY order_date ASC')
+			c.execute('SELECT DISTINCT order_date FROM Orders ORDER BY order_date')
 			dates = c.fetchall()
 		except Error as e:
 			print("Error reading data from SQLite table", e)
@@ -115,17 +115,17 @@ class SQLiteDB:
 	
 	def getOrdersTotal(self, date = None):
 		"""Retorna el total de las ventas"""
-		sales = []
+		total = []
 		try:			
 			c = self.connection.cursor()
 			
-			where_clause = 'WHERE order_date = {}'.format(date) if date else ''
-			c.execute('SELECT SUM(total) as total FROM Orders '+where_clause+' ORDER BY order_date ASC')
-			sales = c.fetchall()
+			where_clause = "WHERE order_date = '{}'".format(date) if date else ''
+			c.execute('SELECT SUM(total) as total FROM Orders '+where_clause+' ORDER BY order_date')
+			total = c.fetchall()
 		except Error as e:
 			print("Error reading data from SQLite table", e)
 		finally:
-			return sales
+			return total[0]['total']
 	
 	def getSalesByPizza(self, date = None):
 		"""Retorna ventas por tamaño de pizza"""
@@ -133,9 +133,9 @@ class SQLiteDB:
 		try:			
 			c = self.connection.cursor()
 			
-			where_clause = 'WHERE O.order_date = {}'.format(date) if date else ''
+			where_clause = "WHERE O.order_date = '{}'".format(date) if date else ''
 			sql_query = '''SELECT S.SizeId, S.name, COUNT(P.PizzaId) as Unidades, IFNULL(SUM(S.price), 0.00) as Monto_UMs 
-			FROM Sizes 
+			FROM Sizes S
 			LEFT JOIN  Pizzas P on P.SizeId = S.SizeId 
 			LEFT JOIN Orders O on O.OrderId = P.OrderId '''+where_clause+''' GROUP BY S.SizeId'''
 			
@@ -152,7 +152,7 @@ class SQLiteDB:
 		try:			
 			c = self.connection.cursor()
 			
-			where_clause = 'WHERE O.order_date = {}'.format(date) if date else ''
+			where_clause = "WHERE O.order_date = '{}'".format(date) if date else ''
 			sql_query = '''SELECT T.ToppingId, T.name, COUNT(PT.ToppingId) as Unidades, IFNULL(SUM(TP.price), 0.00) as Monto_UMs 
 			FROM Toppings T 
 			LEFT JOIN PizzaTopping PT on PT.ToppingId = T.ToppingId 
