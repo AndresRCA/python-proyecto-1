@@ -96,6 +96,7 @@ class SQLiteDB:
 		values = [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
+	#remember to delete this function when cristhian fixes their side on Pizza.py
 	def getToppingPricesRows(self):
 		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
 		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
@@ -112,6 +113,20 @@ class SQLiteDB:
 		finally:
 			return dates
 	
+	def getOrdersTotal(self, date = None):
+		"""Retorna el total de las ventas"""
+		sales = []
+		try:			
+			c = self.connection.cursor()
+			
+			where_clause = 'WHERE order_date = {}'.format(date) if date else ''
+			c.execute('SELECT SUM(total) as total FROM Orders '+where_clause+' ORDER BY order_date ASC')
+			sales = c.fetchall()
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return sales
+	
 	def getSalesByPizza(self, date = None):
 		"""Retorna ventas por tamaño de pizza"""
 		sales = []
@@ -119,7 +134,7 @@ class SQLiteDB:
 			c = self.connection.cursor()
 			
 			where_clause = 'WHERE O.order_date = {}'.format(date) if date else ''
-			sql_query = '''SELECT S.SizeId, S.name, COUNT(P.PizzaId) as Unidades, IFNULL(SUM(S.price), 0.00) as Monto_UMs  
+			sql_query = '''SELECT S.SizeId, S.name, COUNT(P.PizzaId) as Unidades, IFNULL(SUM(S.price), 0.00) as Monto_UMs 
 			FROM Sizes 
 			LEFT JOIN  Pizzas P on P.SizeId = S.SizeId 
 			LEFT JOIN Orders O on O.OrderId = P.OrderId '''+where_clause+''' GROUP BY S.SizeId'''
@@ -129,7 +144,29 @@ class SQLiteDB:
 		except Error as e:
 			print("Error reading data from SQLite table", e)
 		finally:
-			return sales	
+			return sales
+	
+	def getSalesByTopping(self, date = None):
+		"""Retorna ventas por toppings"""
+		sales = []
+		try:			
+			c = self.connection.cursor()
+			
+			where_clause = 'WHERE O.order_date = {}'.format(date) if date else ''
+			sql_query = '''SELECT T.ToppingId, T.name, COUNT(PT.ToppingId) as Unidades, IFNULL(SUM(TP.price), 0.00) as Monto_UMs 
+			FROM Toppings T 
+			LEFT JOIN PizzaTopping PT on PT.ToppingId = T.ToppingId 
+			LEFT JOIN Pizzas P on P.PizzaId = PT.PizzaId 
+			LEFT JOIN Sizes S on S.SizeId = P.SizeId 
+			LEFT JOIN ToppingPrices TP on TP.SizeId = S.SizeId AND TP.ToppingId = T.ToppingId 
+			LEFT JOIN Orders O on O.OrderId = P.OrderId '''+where_clause+''' GROUP BY T.ToppingId'''
+			
+			c.execute(sql_query)
+			sales = c.fetchall()
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return sales
 	
 	def get_sizes_rows(self):
 		"""Get sizes from database"""
