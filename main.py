@@ -131,16 +131,26 @@ def createSummaryFile():
 		
 if __name__ == '__main__':
 	# main start
-	
-	files_directory = './orders'
-	pz_files = accesing_pz_files(files_directory)
-	arrange_orders = get_info(pz_files)
-	print(arrange_orders)
-	for each_pz in arrange_orders:
-		"""separate each .pz file"""
-		print('info in .pz:')
-		print(each_pz)
-		work_the_order(each_pz)
-		
-	# generate a summary
-	createSummaryFile()
+	while(1):
+		print('1.{:20} 2.{}\n3.{:20}'.format('Cargar ordenes', 'Generar resumen', 'Salir'))
+		choice = int(input())
+		if choice == 1:
+			# process orders
+			files_directory = './orders'
+			pz_files = accesing_pz_files(files_directory)
+			arrange_orders = get_info(pz_files)
+			print(arrange_orders)
+			for each_pz in arrange_orders:
+				"""separate each .pz file"""
+				print('info in .pz:')
+				print(each_pz)
+				work_the_order(each_pz)
+			print('Ordenes procesadas e insertadas en la base de datos de manera exitosa')
+		elif choice == 2:
+			# generate a summary
+			createSummaryFile()
+			print('Resumen generado en summary/summary.txt')
+		elif choice == 3:
+			break
+		else:
+			print('ingrese una opción valida')
