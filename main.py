@@ -1,24 +1,11 @@
 import os 
+import glob
 
 from classes.db_model.SQLiteDB import SQLiteDB
 from classes.Pizza import Pizza
 from classes.Order import Order
 
-def accesing_pz_files(files_directory):
-	"""
-	Accesing to the files in the "orders" directory and returning a 
-	list with the name of each '.pz' file.
-	"""
-	files_in_directory = os.listdir(files_directory)
-	pz_files = []
-
-	# Getting the ".pz" files only and creating a list from these ".pz" files.
-	for each_file in files_in_directory:
-		if each_file[-3:] == '.pz':
-			pz_files.append(each_file)
-	return pz_files
-
-def get_info(pz_files):
+def get_info():
 	""" 
 	Read each '.pz' file in the directory
 	returns a list with the orders in each .pz file fill with a list for 
@@ -26,14 +13,13 @@ def get_info(pz_files):
 	"""
 	# Check if file is not in the directory
 	
-	#get each '.pz' file 
+	#get each '.pz' file path
+	pz_files = glob.glob('./orders/*.pz')
 	orders = []
 	for pz_file in pz_files:
-		# Get directoryfor each ".pz" directory
-		pz_file_direction = f'{files_directory}/{pz_file}'
 		try:		
 			# Open each ".pz" file
-			with open(pz_file_direction, encoding='utf-8') as file_object:
+			with open(pz_file, encoding='utf-8') as file_object:
 				lines = file_object.readlines()
 
 		except FileNotFoundError:
@@ -59,6 +45,7 @@ def work_the_order(arrange_orders):
 	Analyze each parameter for each order
 	and calculate. 
 	"""
+	orders = [] #
 	# Separate each propertie from the order
 	for order in arrange_orders:
 		# Get Name and Date
@@ -70,6 +57,8 @@ def work_the_order(arrange_orders):
 		print(order_date)
 		print(customer_name)
 
+		pizzas = [] #
+		
 		# Get Pizza size and toppings for each pizza in the order
 		for line in order[2:-1]:
 			if line != 'FIN_PEDIDO\n':
@@ -78,26 +67,34 @@ def work_the_order(arrange_orders):
 				toppings = size_toppings[1:]
 				size = size.replace('\n', '') #Erase trash 
 				toppings = [s.strip('\n') for s in toppings] #Erase trash 
-			price = Pizza(size, toppings)
-			size_id, size_price = price.get_size_price()
-			toppings_id = price.get_toppings_id(size_id)
-			toppings_price = price.get_toppings_price(toppings_id, size_id)
-			total = price.get_total_price(float(size_price), float(toppings_price))
+			pizza = Pizza(size, toppings)
+			
+			pizzas.append(pizza) #
+			
+			#size_id, size_price = price.get_size_price()
+			#toppings_id = price.get_toppings_id(size_id)
+			#toppings_price = price.get_toppings_price(toppings_id, size_id)
+			total = pizza.get_total_price()
 			print('Size:')
 			print(size)
 			print('toppings:')
 			print(toppings)
-			print('SizeIdD:')
-			print(size_id)
-			print('SizePrice:')
-			print(size_price)
-			print('ToppingsID:')
-			print(toppings_id)
-			print('ToppingsPrice:')
-			print(toppings_price)
+			#print('SizeIdD:')
+			#print(size_id)
+			#print('SizePrice:')
+			#print(size_price)
+			#print('ToppingsID:')
+			#print(toppings_id)
+			#print('ToppingsPrice:')
+			#print(toppings_price)
 			print('Total:')
 			print(total)
-			print('') 
+			print('')
+			
+		orders.append(Order(customer_name, order_date, pizzas)) #
+		
+	print(orders)
+	return orders #
 		
 def createSummaryFile():
 	if not os.path.exists('./summary'):
@@ -136,9 +133,7 @@ if __name__ == '__main__':
 		choice = int(input())
 		if choice == 1:
 			# process orders
-			files_directory = './orders'
-			pz_files = accesing_pz_files(files_directory)
-			arrange_orders = get_info(pz_files)
+			arrange_orders = get_info()
 			print(arrange_orders)
 			for each_pz in arrange_orders:
 				"""separate each .pz file"""

@@ -101,6 +101,21 @@ class SQLiteDB:
 		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
 		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 	
+	def getToppingPrice(self, sizeId, toppingId):
+		"""Retorna el precio de un ingrediente dependiendo del tamaño"""
+		price = None
+		try:			
+			c = self.connection.cursor()
+			
+			c.execute('SELECT price FROM ToppingPrices WHERE SizeId = {} AND ToppingId = {}'.format(sizeId, toppingId))
+			price = c.fetchall()
+			if price:
+				price = price[0]['price']
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return price
+	
 	def getOrderDates(self):
 		"""Retorna fechas unicas dentro de la tabla Orders"""
 		dates = []
@@ -115,17 +130,19 @@ class SQLiteDB:
 	
 	def getOrdersTotal(self, date = None):
 		"""Retorna el total de las ventas"""
-		total = []
+		total = None
 		try:			
 			c = self.connection.cursor()
 			
 			where_clause = "WHERE order_date = '{}'".format(date) if date else ''
 			c.execute('SELECT SUM(total) as total FROM Orders '+where_clause+' ORDER BY order_date')
 			total = c.fetchall()
+			if total:
+				total = total[0]['total']
 		except Error as e:
 			print("Error reading data from SQLite table", e)
 		finally:
-			return total[0]['total']
+			return total
 	
 	def getSalesByPizza(self, date = None):
 		"""Retorna ventas por tamaño de pizza"""
@@ -167,13 +184,34 @@ class SQLiteDB:
 			print("Error reading data from SQLite table", e)
 		finally:
 			return sales
+		
+	def getSizeIdByName(self, size_name):
+		sizeId = None
+		try:			
+			c = self.connection.cursor()
+			
+			c.execute("SELECT SizeId FROM Sizes WHERE name = '{}'".format(size_name))
+			sizeId = c.fetchall()
+			if sizeId:
+				sizeId = sizeId[0]['SizeId']
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return sizeId
 	
-	def get_sizes_rows(self):
-		"""Get sizes from database"""
-		cursor = self.connection.cursor()
-		cursor.execute("SELECT * FROM Sizes")
-		rows = cursor.fetchall()
-		return rows
+	def getSizePriceById(self, sizeId):
+		"""Get size price from database"""
+		price = None
+		try:
+			cursor = self.connection.cursor()
+			cursor.execute("SELECT price FROM Sizes WHERE SizeId = {}".format(sizeId))
+			price = cursor.fetchall()
+			if price:
+				price = price[0]['price']
+		except Error as e:
+			print("Error reading data from SQLite table", e)
+		finally:
+			return price
 	
 	def get_toppings_rows(self):
 		cursor = self.connection.cursor()
