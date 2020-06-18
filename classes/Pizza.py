@@ -40,7 +40,6 @@ class Pizza:
 		"""
 		topping_price = 0
 		db = SQLiteDB.getInstance()
-		toppings_info = db.getToppingPricesRows()
 		for toppingId in self.toppings:
 			topping_price += db.getToppingPrice(self.size, toppingId)
 		return topping_price

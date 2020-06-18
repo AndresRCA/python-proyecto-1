@@ -96,11 +96,6 @@ class SQLiteDB:
 		values = [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
-	#remember to delete this function when cristhian fixes their side on Pizza.py
-	def getToppingPricesRows(self):
-		"""Retorna una lista de tuplas [(price, SizeId, ToppingId)] para el uso de cursor.executemany() en ToppingPricesTable()"""
-		return [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
-	
 	def getToppingPrice(self, sizeId, toppingId):
 		"""Retorna el precio de un ingrediente dependiendo del tamaño"""
 		price = None
