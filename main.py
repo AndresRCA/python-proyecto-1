@@ -107,16 +107,16 @@ if __name__ == '__main__':
 				# process orders in each file
 				print('\ninfo in {}:\n'.format(pz_file))
 				arranged_orders = readOrders(pz_file)
-				print(arranged_orders)
+				print(arranged_orders, '\n')
 				orders = getOrders(arranged_orders)
 				db = SQLiteDB.getInstance()
 				for order in orders:
 					db.insertFullOrder(order)
-			print('Ordenes procesadas e insertadas en la base de datos de manera exitosa')
+			print('Ordenes procesadas e insertadas en la base de datos de manera exitosa\n')
 		elif choice == 2:
 			# generate a summary
 			createSummaryFile()
-			print('Resumen generado en summary/summary.txt')
+			print('\nResumen generado en summary/summary.txt\n')
 		elif choice == 3:
 			break
 		else:

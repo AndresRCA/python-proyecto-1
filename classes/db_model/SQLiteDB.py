@@ -246,15 +246,15 @@ class SQLiteDB:
 		
 		try:
 			c = self.connection.cursor()
-			c.execute("INSERT INTO Orders (client_name, order_date, total) VALUES ('{}', '{}', {})".format(order.name, order.date, order.getTotal()))
+			c.execute("INSERT INTO Orders (client_name, order_date, total) VALUES (?,?,?)", (order.name, order.date, order.getTotal()))
 			
 			orderId = c.lastrowid
 			for pizza in order.pizzas:
-				c.execute("INSERT INTO Pizzas (total, SizeId, OrderId) VALUES ({}, {}, {})".format(pizza.get_total_price(), pizza.size, orderId))
+				c.execute("INSERT INTO Pizzas (total, SizeId, OrderId) VALUES (?,?,?)", (pizza.get_total_price(), pizza.size, orderId))
 				
 				pizzaId = c.lastrowid
 				for topping in pizza.toppings:
-					c.execute("INSERT INTO PizzaTopping (PizzaId, ToppingId) VALUES ({}, {})".format(pizzaId, topping))
+					c.execute("INSERT INTO PizzaTopping (PizzaId, ToppingId) VALUES (?,?)", (pizzaId, topping))
 				
 				self.connection.commit() # at this point a pizza in the order is saved	
 		except sqlite3.Error as e:

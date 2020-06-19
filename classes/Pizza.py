@@ -49,7 +49,6 @@ class Pizza:
 		toppings_price = self.get_toppings_price()
 		total = size_price + toppings_price
 		total = '{:.2f}'.format(total)
-		print('get_total_price: size_price->{} , topp_price->{}'.format(size_price, toppings_price))
 		return float(total)
 		
 
