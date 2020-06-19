@@ -26,12 +26,14 @@ class SQLiteDB:
 	@staticmethod 
 	def getInstance():
 		"""Metodo estatico de acceso"""
+		
 		if SQLiteDB.__instance == None:
 			SQLiteDB()
 		return SQLiteDB.__instance
 	
 	def __init__(self):
 		"""establece el objeto y crea una conexión"""
+		
 		if SQLiteDB.__instance != None:
 			raise Exception('Esta clase es un singleton')
 		else:
@@ -40,8 +42,12 @@ class SQLiteDB:
 			
 	def setUp(self):
 		"""Crea DB e inicialización. Retorna la conexión"""
+		
 		if path.exists('./DB/Store.db'):
 			db = sqlite3.connect('./DB/Store.db')
+			cursor = db.cursor()
+			cursor.execute('PRAGMA foreign_keys=1') # enforce foreign keys
+			db.commit()
 			db.row_factory = sqlite3.Row # important setting, this way rows can be accessed through column names plus other functionality
 			return db
 		db = sqlite3.connect('./DB/Store.db')
@@ -56,48 +62,55 @@ class SQLiteDB:
 		self.initPizzasTable(cursor)
 		self.initPizzaTopping(cursor)
 		self.initToppingPricesTable(cursor)
-		
+		cursor.execute('PRAGMA foreign_keys=1') # enforce foreign keys
 		db.commit()
 		return db
 		
 	def initSizesTable(self, cursor):
 		"""Crea la tabla Sizes si Store.db no existe"""
+		
 		cursor.execute('CREATE TABLE IF NOT EXISTS Sizes (SizeId INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL, price INT)')
 		cursor.executemany('INSERT INTO Sizes (name, price) VALUES (?,?)', zip(self.__size_names, self.__size_prices))
 		
 	def initToppingsTable(self, cursor):
 		"""Crea la tabla Toppings si Store.db no existe"""
+		
 		cursor.execute('CREATE TABLE IF NOT EXISTS Toppings (ToppingId INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR NOT NULL)')
 		cursor.executemany('INSERT INTO Toppings (name) VALUES (?)', self.__topping_names)
 		
 	def initOrdersTable(self, cursor):
 		"""Crea la tabla Orders si Store.db no existe"""
+		
 		cursor.execute('CREATE TABLE IF NOT EXISTS Orders (OrderId INTEGER PRIMARY KEY AUTOINCREMENT, client_name VARCHAR NOT NULL, order_date DATE NOT NULL, total FLOAT NOT NULL)')
 		
 	def initPizzasTable(self, cursor):
 		"""Crea la tabla Pizzas si Store.db no existe"""
+		
 		cursor.execute('''CREATE TABLE IF NOT EXISTS Pizzas (PizzaId INTEGER PRIMARY KEY AUTOINCREMENT, total FLOAT NOT NULL, 
-						SizeId INTEGER, OrderId INTEGER, 
-						FOREIGN KEY (SizeId) REFERENCES Sizes(SizeId), 
-						FOREIGN KEY (OrderId) REFERENCES Orders(OrderId))''')
+		SizeId INTEGER, OrderId INTEGER, 
+		FOREIGN KEY (SizeId) REFERENCES Sizes(SizeId), 
+		FOREIGN KEY (OrderId) REFERENCES Orders(OrderId))''')
 	
 	def initPizzaTopping(self, cursor):
 		"""Crea la tabla PizzaTopping si Store.db no existe"""
+		
 		cursor.execute('''CREATE TABLE IF NOT EXISTS PizzaTopping (PizzaId INTEGER, ToppingId Integer, 
-					   FOREIGN KEY (PizzaId) REFERENCES Pizzas(PizzaId), 
-					   FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
+		FOREIGN KEY (PizzaId) REFERENCES Pizzas(PizzaId), 
+		FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
 		
 	def initToppingPricesTable(self, cursor):
 		"""Crea la tabla ToppingPrices si Store.db no existe"""
+		
 		cursor.execute('''CREATE TABLE IF NOT EXISTS ToppingPrices (price FLOAT NOT NULL, SizeId INTEGER, ToppingId INTEGER, 
-						FOREIGN KEY (SizeId) REFERENCES Pizzas(PizzaId)
-						FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
+		FOREIGN KEY (SizeId) REFERENCES Pizzas(PizzaId) 
+		FOREIGN KEY (ToppingId) REFERENCES Toppings(ToppingId))''')
 		# get the ToppingPrices rows to insert into table
 		values = [(price, size_id.value, topping.value) for topping in Toppings for size_id, price in zip(self.__size_ids, self.__topping_prices[topping.value])]
 		cursor.executemany('INSERT INTO ToppingPrices (price, SizeId, ToppingId) VALUES (?,?,?)', values) # insert multiple rows here (for each ToppingId)
 	
 	def getToppingPrice(self, sizeId, toppingId):
 		"""Retorna el precio de un ingrediente dependiendo del tamaño"""
+		
 		price = None
 		try:			
 			c = self.connection.cursor()
@@ -106,25 +119,27 @@ class SQLiteDB:
 			price = c.fetchall()
 			if price:
 				price = price[0]['price']
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return price
 	
 	def getOrderDates(self):
 		"""Retorna fechas unicas dentro de la tabla Orders"""
+		
 		dates = []
 		try:			
 			c = self.connection.cursor()
 			c.execute('SELECT DISTINCT order_date FROM Orders ORDER BY order_date')
 			dates = c.fetchall()
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return dates
 	
 	def getOrdersTotal(self, date = None):
 		"""Retorna el total de las ventas"""
+		
 		total = None
 		try:			
 			c = self.connection.cursor()
@@ -134,13 +149,14 @@ class SQLiteDB:
 			total = c.fetchall()
 			if total:
 				total = total[0]['total']
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return total
 	
 	def getSalesByPizza(self, date = None):
 		"""Retorna ventas por tamaño de pizza"""
+		
 		sales = []
 		try:			
 			c = self.connection.cursor()
@@ -153,13 +169,14 @@ class SQLiteDB:
 			
 			c.execute(sql_query)
 			sales = c.fetchall()
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return sales
 	
 	def getSalesByTopping(self, date = None):
 		"""Retorna ventas por toppings"""
+		
 		sales = []
 		try:			
 			c = self.connection.cursor()
@@ -175,12 +192,14 @@ class SQLiteDB:
 			
 			c.execute(sql_query)
 			sales = c.fetchall()
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return sales
 		
 	def getSizeIdByName(self, size_name):
+		"""Retorna el SizeId dependiendo del parametro 'size_name' de tipo string dado"""
+		
 		sizeId = None
 		try:			
 			c = self.connection.cursor()
@@ -189,13 +208,14 @@ class SQLiteDB:
 			sizeId = c.fetchall()
 			if sizeId:
 				sizeId = sizeId[0]['SizeId']
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return sizeId
 	
 	def getSizePriceById(self, sizeId):
 		"""Get size price from database"""
+		
 		price = None
 		try:
 			cursor = self.connection.cursor()
@@ -203,13 +223,41 @@ class SQLiteDB:
 			price = cursor.fetchall()
 			if price:
 				price = price[0]['price']
-		except Error as e:
-			print("Error reading data from SQLite table", e)
+		except sqlite3.Error as e:
+			print("Error reading data from SQLite table:", e)
 		finally:
 			return price
 	
 	def get_toppings_rows(self):
-		cursor = self.connection.cursor()
-		cursor.execute("SELECT * FROM Toppings")
-		rows = cursor.fetchall()
-		return rows
+		"""Return topping rows"""
+		
+		rows = []
+		try:
+			cursor = self.connection.cursor()
+			cursor.execute("SELECT * FROM Toppings")
+			rows = cursor.fetchall()
+		except slqite3.Error as e:
+			print("Error reading data from SQLite table:", e)
+		finally:
+			return rows
+	
+	def insertFullOrder(self, order):
+		"""Inserta orden, pizza y toppings asociados, en sucesion a la base de datos"""
+		
+		try:
+			c = self.connection.cursor()
+			c.execute("INSERT INTO Orders (client_name, order_date, total) VALUES ('{}', '{}', {})".format(order.name, order.date, order.getTotal()))
+			
+			orderId = c.lastrowid
+			for pizza in order.pizzas:
+				c.execute("INSERT INTO Pizzas (total, SizeId, OrderId) VALUES ({}, {}, {})".format(pizza.get_total_price(), pizza.size, orderId))
+				
+				pizzaId = c.lastrowid
+				for topping in pizza.toppings:
+					c.execute("INSERT INTO PizzaTopping (PizzaId, ToppingId) VALUES ({}, {})".format(pizzaId, topping))
+				
+				self.connection.commit() # at this point a pizza in the order is saved	
+		except sqlite3.Error as e:
+			print("Error inserting data to SQLite table:", e)
+		else:
+			self.connection.commit() # if there were no errors save changes

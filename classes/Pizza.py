@@ -11,15 +11,6 @@ class Pizza:
 		db = SQLiteDB.getInstance()
 		sizeId = db.getSizeIdByName(size_name)
 		return sizeId
-	
-	def get_size_price(self):
-		"""
-		From pizza size get id, size, price from db
-		Returns size id, price.
-		"""
-		db = SQLiteDB.getInstance()
-		size_price = db.getSizePriceById(self.size)
-		return size_price
 		
 	def get_toppings_id(self, toppings):
 		"""Return the topping´s id."""
@@ -33,6 +24,14 @@ class Pizza:
 					ids.append(row[0])
 		return ids
 		
+	def get_size_price(self):
+		"""
+		From pizza size get id, size, price from db
+		Returns size id, price.
+		"""
+		db = SQLiteDB.getInstance()
+		size_price = db.getSizePriceById(self.size)
+		return size_price
 		
 	def get_toppings_price(self):
 		"""
@@ -48,9 +47,10 @@ class Pizza:
 		"""Calculates the final price for the pizza"""
 		size_price = self.get_size_price()
 		toppings_price = self.get_toppings_price()
-		total = float(size_price) + float(toppings_price)
+		total = size_price + toppings_price
 		total = '{:.2f}'.format(total)
-		return total
+		print('get_total_price: size_price->{} , topp_price->{}'.format(size_price, toppings_price))
+		return float(total)
 		
 
 				

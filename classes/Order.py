@@ -8,5 +8,6 @@ class Order:
 	def getTotal(self):
 		total = 0
 		for pizza in self.pizzas:
-			total += pizza.get_price_total()
+			total += pizza.get_total_price()
+			print('getTotal total:', total)
 		return total

@@ -5,7 +5,7 @@ from classes.db_model.SQLiteDB import SQLiteDB
 from classes.Pizza import Pizza
 from classes.Order import Order
 
-def getOrders(pz_file):
+def readOrders(pz_file):
 	""" 
 	Read each '.pz' file in the directory
 	returns a list with the orders in each .pz file fill with a list for 
@@ -36,11 +36,8 @@ def getOrders(pz_file):
 				arranged_orders.append(order_n) # add finished order
 		return arranged_orders
 
-def work_the_order(arranged_orders):	
-	""" 
-	Analyze each parameter for each order
-	and calculate. 
-	"""
+def getOrders(arranged_orders):	
+	"""Returns a list of Order objects from a list of lines coming from a .pz file"""
 	orders = []
 	# Separate each propertie from the order
 	for order in arranged_orders:
@@ -109,9 +106,12 @@ if __name__ == '__main__':
 			for pz_file in pz_files:
 				# process orders in each file
 				print('\ninfo in {}:\n'.format(pz_file))
-				arranged_orders = getOrders(pz_file)
+				arranged_orders = readOrders(pz_file)
 				print(arranged_orders)
-				work_the_order(arranged_orders)
+				orders = getOrders(arranged_orders)
+				db = SQLiteDB.getInstance()
+				for order in orders:
+					db.insertFullOrder(order)
 			print('Ordenes procesadas e insertadas en la base de datos de manera exitosa')
 		elif choice == 2:
 			# generate a summary
