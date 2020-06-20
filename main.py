@@ -1,6 +1,7 @@
 import os 
 import glob
 
+from datetime import datetime
 from classes.db_model.SQLiteDB import SQLiteDB
 from classes.Pizza import Pizza
 from classes.Order import Order
@@ -40,30 +41,36 @@ def getOrders(arranged_orders):
 	orders = []
 	# Separate each propertie from the order
 	for order in arranged_orders:
-		# Get Name and Date
-		customer_name, order_date = order[0].split(';')
+		try:
+			# Get Name and Date
+			customer_name, order_date = order[0].split(';')
+
+			# Check if date is formatted in dd/mm/yyyy
+			datetime.strptime(order_date, '%d/%m/%Y')
+
+			# -> name and date checking goes here <-
+			# whenever any of these values is None, the order is cancelled when inserting to the database (due to NOT NULL constraints)
+			customer_name = customer_name or None # if customer_name is empty string, assigns None value (see Short Circuit Evaluations)
+			order_date = order_date or None
 		
-		# -> name and date checking goes here <-
-		# whenever any of these values is None, the order is cancelled when inserting to the database (due to NOT NULL constraints)
-		customer_name = customer_name or None # if customer_name is empty string, assigns None value (see Short Circuit Evaluations)
-		order_date = order_date or None
-		
-		pizzas = []
-		# Get Pizza size and toppings for each pizza in the order if a topping name is not written correctly it wont be added to the pizza.
-		for line in order[1:]:
-			size_toppings = line.split(';')
-			size = size_toppings[0]
-			toppings = size_toppings[1:]
-			pizza = Pizza(size, toppings)
-			pizzas.append(pizza)
-			total = pizza.get_total_price()
-			print('Client:', customer_name)
-			print('Date:', order_date)
-			print('Size:', size)
-			print('Toppings:', toppings)
-			print('Total:', total)
-			print('')
-		orders.append(Order(customer_name, order_date, pizzas))
+			pizzas = []
+			# Get Pizza size and toppings for each pizza in the order if a topping name is not written correctly it wont be added to the pizza.
+			for line in order[1:]:
+				size_toppings = line.split(';')
+				size = size_toppings[0]
+				toppings = size_toppings[1:]
+				pizza = Pizza(size, toppings)
+				pizzas.append(pizza)
+				total = pizza.get_total_price()
+				print('Client:', customer_name)
+				print('Date:', order_date)
+				print('Size:', size)
+				print('Toppings:', toppings)
+				print('Total:', total)
+				print('')
+			orders.append(Order(customer_name, order_date, pizzas))
+		except:
+			print('\nNot a valid date format.\n')
 	return orders
 		
 def createSummaryFile():
@@ -93,7 +100,7 @@ def createSummaryFile():
 		f.write('\nVentas por Ingrediente:\n')
 		f.write('{:20} {:20} {:22}\n'.format('Ingredientes', 'Unidades', 'Monto Ums'))
 		for sale in sales_topping:
-			f.write('{:20} {} {:25}\n'.format(sale['name'].capitalize(), sale['Unidades'], sale['Monto_Ums']))
+			f.write('{:20} {} {:25.2f}\n'.format(sale['name'].capitalize(), sale['Unidades'], sale['Monto_Ums']))
 	#final line
 	f.write('===========================================')
 	f.close()
