@@ -45,6 +45,9 @@ def getOrders(arranged_orders):
 		customer_name, order_date = order[0].split(';')
 		
 		# -> name and date checking goes here <-
+		# whenever any of these values is None, the order is cancelled when inserting to the database (due to NOT NULL constraints)
+		customer_name = customer_name or None # if customer_name is empty string, assigns None value (see Short Circuit Evaluations)
+		order_date = order_date or None
 		
 		pizzas = []
 		# Get Pizza size and toppings for each pizza in the order
@@ -52,7 +55,7 @@ def getOrders(arranged_orders):
 			size_toppings = line.split(';')
 			size = size_toppings[0]
 			toppings = size_toppings[1:]
-			pizza = Pizza(size, toppings) # maybe topping check should be done inside the class? I don't know
+			pizza = Pizza(size, toppings) # maybe size and topping check should be done inside the class? I don't know
 			pizzas.append(pizza)
 			total = pizza.get_total_price()
 			print('Client:', customer_name)
