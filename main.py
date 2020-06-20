@@ -12,7 +12,6 @@ def readOrders(pz_file):
 	each order on the .pz file
 	"""
 	#get each '.pz' file path
-	orders = []
 	try:		
 		# Open each ".pz" file
 		with open(pz_file, encoding='utf-8') as file_object:
@@ -50,12 +49,12 @@ def getOrders(arranged_orders):
 		order_date = order_date or None
 		
 		pizzas = []
-		# Get Pizza size and toppings for each pizza in the order
+		# Get Pizza size and toppings for each pizza in the order if a topping name is not written correctly it wont be added to the pizza.
 		for line in order[1:]:
 			size_toppings = line.split(';')
 			size = size_toppings[0]
 			toppings = size_toppings[1:]
-			pizza = Pizza(size, toppings) # maybe size and topping check should be done inside the class? I don't know
+			pizza = Pizza(size, toppings)
 			pizzas.append(pizza)
 			total = pizza.get_total_price()
 			print('Client:', customer_name)
