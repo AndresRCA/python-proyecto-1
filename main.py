@@ -68,7 +68,7 @@ def getOrders(arranged_orders):
 			print('Client:', customer_name)
 			print('Date:', order_date)
 			print('Size:', size)
-			print('Toppings:', toppings)
+			print('Toppings (read in file):', toppings)
 			print('Total:', total)
 			print('')
 		orders.append(Order(customer_name, order_date, pizzas))
@@ -87,7 +87,7 @@ def createSummaryFile():
 		f.write('Fecha: '+str(date['order_date'])+'\n')
 		
 		orders_total = db.getOrdersTotal(date['order_date'])
-		f.write('Venta Total: '+str(orders_total)+' UMs\n')
+		f.write('Venta Total: {0:.2f} UMs\n'.format(orders_total))
 		
 		# ventas por pizza
 		sales_pizza = db.getSalesByPizza(date['order_date']) # at this point it's impossible that this list is empty
@@ -117,12 +117,11 @@ if __name__ == '__main__':
 				# process orders in each file
 				print('\ninfo in {}:\n'.format(pz_file))
 				arranged_orders = readOrders(pz_file)
-				print(arranged_orders, '\n')
 				orders = getOrders(arranged_orders)
 				db = SQLiteDB.getInstance()
 				for order in orders:
 					db.insertFullOrder(order)
-			print('Ordenes procesadas e insertadas en la base de datos de manera exitosa\n')
+			print('\nOrdenes procesadas e insertadas en la base de datos de manera exitosa\n')
 		elif choice == 2:
 			# generate a summary
 			createSummaryFile()
