@@ -3,8 +3,7 @@
 # Diseño de un programa de pedido para Pizzerías.
 
 ## DataBase:
-! [DataBase Image]
-(https://raw.githubusercontent.com/AndresRCA/python-proyecto-1/master/DB/DB_Schema.png)
+! [DataBase Image](https://raw.githubusercontent.com/AndresRCA/python-proyecto-1/master/DB/DB_Schema.png)
 
 En la figura anterior se puede observar las tablas que componen la base de datos a usar en
 el programa, se trato de mantener la separación de datos y relaciones entre tablas, se
