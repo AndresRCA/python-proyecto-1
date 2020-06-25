@@ -29,6 +29,9 @@ class Pizza:
 		From pizza size get id, size, price from db
 		Returns size id, price.
 		"""
+		size_price = 0
+		if not self.size: # if size is None (or empty)
+			return size_price
 		db = SQLiteDB.getInstance()
 		size_price = db.getSizePriceById(self.size)
 		return size_price
@@ -40,7 +43,9 @@ class Pizza:
 		topping_price = 0
 		db = SQLiteDB.getInstance()
 		for toppingId in self.toppings:
-			topping_price += db.getToppingPrice(self.size, toppingId)
+			price = db.getToppingPrice(self.size, toppingId)
+			if price:
+				topping_price += price
 		return topping_price
 	
 	def get_total_price(self):

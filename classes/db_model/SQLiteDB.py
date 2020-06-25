@@ -208,6 +208,8 @@ class SQLiteDB:
 			sizeId = c.fetchall()
 			if sizeId:
 				sizeId = sizeId[0]['SizeId']
+			else:
+				sizeId = None
 		except sqlite3.Error as e:
 			print("Error reading data from SQLite table:", e)
 		finally:
